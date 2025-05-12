@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Form Data Petani</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Leaflet & Leaflet Draw -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-geometryutil@0.10.0/src/leaflet.geometryutil.min.js"></script>
+
+    <!-- Font & CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            max-width: 800px;
+            margin: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: 600;
+            margin-top: 10px;
+            display: block;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        #map {
+            width: 100%;
+            height: 350px;
+            margin-bottom: 15px;
+        }
+        .reset-btn {
+            width: auto;
+            background-color: #f44336;
+            color: white;
+            margin-bottom: 20px;
+        }
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #e6ffed;
+            border: 1px solid #2ecc71;
+            padding: 10px;
+            color: #2ecc71;
+        }
+        .danger {
+            background-color: #ffe6e6;
+            border: 1px solid #e74c3c;
+            padding: 10px;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Input Biodata Petani Milenial</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" enctype="multipart/form-data">
+        <label for="nama">Nama:</label>
+        <input type="text" id="nama" name="nama" required>
+
+        <label for="nik">NIK:</label>
+        <input type="text" id="nik" name="nik" pattern="\d{16}" title="Masukkan 16 digit angka" required>
+
+        <label for="tanggal_lahir">Tanggal Lahir:</label>
+        <input type="date" id="tanggal_lahir" name="tanggal_lahir" required>
+
+        <label for="no_telpon">No Telpon:</label>
+        <input type="text" id="no_telpon" name="no_telpon" pattern="^\+?\d{10,15}$" title="Masukkan nomor HP yang valid" required>
+
+        <label for="alamat">Alamat:</label>
+        <textarea id="alamat" name="alamat" rows="3" required></textarea>
+
+        <label>Lokasi Lahan (klik pada peta):</label>
+        <div id="map"></div>
+        <button type="button" class="reset-btn" onclick="resetLocation()">Reset Lokasi</button>
+
+        <label for="latitude">Latitude:</label>
+        <input type="text" id="latitude" name="latitude" readonly required>
+
+        <label for="longitude">Longitude:</label>
+        <input type="text" id="longitude" name="longitude" readonly required>
+
+        <input type="hidden" id="lahan_geom" name="lahan_geom">
+        <input type="hidden" id="luas_lahan" name="luas_lahan">
+
+        <label for="luas_lahan_display">Estimasi Luas Lahan (m²):</label>
+        <input type="text" id="luas_lahan_display" readonly>
+
+        <button type="submit">Simpan</button>
+    </form>
+</div>
+
+<script>
+    var map = L.map('map').setView([-8.1725, 113.6953], 13); // Fokus ke Jember
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    var rumahMarker;
+    var drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+
+    var drawControl = new L.Control.Draw({
+        draw: {
+            polygon: true,
+            polyline: false,
+            rectangle: false,
+            circle: false,
+            marker: false,
+            circlemarker: false
+        },
+        edit: {
+            featureGroup: drawnItems
+        }
+    });
+    map.addControl(drawControl);
+
+    map.on('click', function(e) {
+        if (rumahMarker) map.removeLayer(rumahMarker);
+        rumahMarker = L.marker(e.latlng).addTo(map);
+        document.getElementById('latitude').value = e.latlng.lat;
+        document.getElementById('longitude').value = e.latlng.lng;
+    });
+
+    function resetLocation() {
+        if (rumahMarker) {
+            map.removeLayer(rumahMarker);
+            rumahMarker = null;
+        }
+        drawnItems.clearLayers();
+        document.getElementById('latitude').value = '';
+        document.getElementById('longitude').value = '';
+        document.getElementById('lahan_geom').value = '';
+        document.getElementById('luas_lahan').value = '';
+        document.getElementById('luas_lahan_display').value = '';
+    }
+
+    map.on('draw:created', function (e) {
+        drawnItems.clearLayers();
+        var layer = e.layer;
+        drawnItems.addLayer(layer);
+
+        var latlngs = layer.getLatLngs()[0];
+        if (latlngs[0].lat !== latlngs[latlngs.length - 1].lat || latlngs[0].lng !== latlngs[latlngs.length - 1].lng) {
+            latlngs.push(latlngs[0]);
+        }
+
+        var wkt = 'POLYGON((' + latlngs.map(p => `${p.lng} ${p.lat}`).join(', ') + '))';
+        document.getElementById('lahan_geom').value = wkt;
+
+        var area = L.GeometryUtil.geodesicArea(latlngs);
+        document.getElementById('luas_lahan').value = area.toFixed(2);
+        document.getElementById('luas_lahan_display').value = area.toFixed(2);
+    });
+
+    document.querySelector("form").addEventListener("submit", function(e) {
+        const geom = document.getElementById('lahan_geom').value;
+        const luas = parseFloat(document.getElementById('luas_lahan').value || "0");
+
+        if (!geom) {
+            alert("Silakan gambar polygon lahan terlebih dahulu.");
+            e.preventDefault();
+            return;
+        }
+
+        if (luas <= 0) {
+            alert("Luas lahan tidak valid.");
+            e.preventDefault();
+            return;
+        }
+
+        const btn = this.querySelector("button[type=submit]");
+        btn.disabled = true;
+        btn.textContent = "Menyimpan...";
+    });
+</script>
+</body>
+</html>

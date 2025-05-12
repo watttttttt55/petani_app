@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #2980b9, #6ab04c);
+            min-height: 100vh;
+            color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        h2 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+        }
+        nav {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 600px;
+        }
+        a.button {
+            background: #27ae60;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.25rem;
+            padding: 14px 32px;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(39, 174, 96, 0.6);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+            user-select: none;
+            display: inline-block;
+            min-width: 180px;
+            text-align: center; /* Ensure text is centered in buttons */
+        }
+        a.button:hover,
+        a.button:focus {
+            background: #2ecc71;
+            box-shadow: 0 10px 25px rgba(46, 204, 113, 0.8);
+            outline: none;
+            transform: translateY(-3px);
+        }
+        a.button:active {
+            transform: translateY(0);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.5);
+        }
+        @media (max-width: 480px) {
+            h2 {
+                font-size: 2rem;
+                margin-bottom: 30px;
+            }
+            nav {
+                gap: 16px;
+            }
+            a.button {
+                min-width: 140px;
+                font-size: 1.1rem;
+                padding: 12px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>Selamat datang, {{ username }}</h2>
+    <nav>
+        {% if petani_data %}
+            <a href="{{ url_for('edit_petani', id=petani_data[0]) }}" class="button" aria-label="Edit Data Petani">Edit Data Petani</a>
+        {% else %}
+            <a href="{{ url_for('form_petani') }}" class="button" aria-label="Tambah Data Petani">+ Tambah Data Petani</a>
+        {% endif %}
+        <a href="{{ url_for('isi_komoditas') }}" class="button" aria-label="Isi Komoditas">Isi Komoditas</a>
+        <a href="{{ url_for('isi_hasil_panen') }}" class="button" aria-label="Hasil Panen">Hasil Panen</a>
+        <a href="{{ url_for('logout') }}" class="button" aria-label="Logout">Logout</a>
+    </nav>
+</body>
+</html>

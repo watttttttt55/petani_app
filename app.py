@@ -7,26 +7,14 @@ from shapely.geometry import Point, Polygon, MultiPolygon
 from geoalchemy2.shape import from_shape
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+from dotenv import load_dotenv
+load_dotenv()
+
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "12345678")  # gunakan env jika ada
 UPLOAD_FOLDER = 'uploads/shapefiles'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# ... (semua definisi fungsi & rute tetap seperti sebelumnya)
-
-@app.route("/")
-def home():
-    print("Mengakses rute /")
-    return redirect(url_for('login'))
-
-# ... (semua route lainnya tetap sama tanpa perubahan)
-
-# Jalankan server dengan port dari Railway
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Gunakan PORT dari Railway jika tersedia
-    app.run(host="0.0.0.0", port=port)
-
 
 def get_db_conn():
     try:
@@ -393,5 +381,5 @@ def hapus_petani(id):
 # Remaining routes for register, login, dashboard, etc.
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))  # default ke 5000 jika PORT tidak tersedia
+    port = int(os.environ.get("PORT", 5001))  # default ke 5000 jika PORT tidak tersedia
     app.run(host="0.0.0.0", port=port)

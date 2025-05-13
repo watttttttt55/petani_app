@@ -38,6 +38,10 @@ def login_required(f):
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
+@app.route("/")
+def home():
+    return "Hello, world!"
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     print("Mengakses rute /")
@@ -377,7 +381,6 @@ def hapus_petani(id):
 
 # Remaining routes for register, login, dashboard, etc.
 
-if __name__ == '__main__':
-    if not os.path.exists(app.config['UPLOAD_FOLDER']):
-        os.makedirs(app.config['UPLOAD_FOLDER'])
-    app.run(debug=True)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))  # default ke 5000 jika PORT tidak tersedia
+    app.run(host="0.0.0.0", port=port)

@@ -9,9 +9,24 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 
 app = Flask(__name__)
-app.secret_key = '12345678'
+app.secret_key = os.environ.get("SECRET_KEY", "12345678")  # gunakan env jika ada
 UPLOAD_FOLDER = 'uploads/shapefiles'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# ... (semua definisi fungsi & rute tetap seperti sebelumnya)
+
+@app.route("/")
+def home():
+    print("Mengakses rute /")
+    return redirect(url_for('login'))
+
+# ... (semua route lainnya tetap sama tanpa perubahan)
+
+# Jalankan server dengan port dari Railway
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))  # Gunakan PORT dari Railway jika tersedia
+    app.run(host="0.0.0.0", port=port)
+
 
 def get_db_conn():
     try:
@@ -37,10 +52,6 @@ def login_required(f):
     return decorated_function
 
 from werkzeug.security import generate_password_hash, check_password_hash
-
-@app.route("/")
-def home():
-    return "Hello, world!"
 
 @app.route('/', methods=['GET', 'POST'])
 def index():

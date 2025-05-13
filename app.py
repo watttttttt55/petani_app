@@ -10,9 +10,8 @@ from functools import wraps
 from dotenv import load_dotenv
 load_dotenv()
 
-
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "12345678")  # gunakan env jika ada
+app.secret_key = os.environ.get("SECRET_KEY", "12345678")
 UPLOAD_FOLDER = 'uploads/shapefiles'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -198,12 +197,9 @@ def form_petani():
             conn.commit()
             flash("Data petani berhasil disimpan!", "success")
             print("Data petani berhasil disimpan!")
-            # Setelah berhasil menyimpan, dapatkan ID petani yang baru diinsert
-            cur.execute("SELECT id FROM petani WHERE nik = %s", (nik,))
-            petani_id = cur.fetchone()[0]
             cur.close()
             close_db_connection(conn)
-            return redirect(url_for('edit_petani', id=petani_id))
+            return redirect(url_for('dashboard')) # Redirect ke dashboard setelah tambah
         except psycopg2.Error as e:
             conn.rollback()
             flash(f"Kesalahan database: {e}", "danger")
@@ -381,5 +377,5 @@ def hapus_petani(id):
 # Remaining routes for register, login, dashboard, etc.
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5001))  # default ke 5000 jika PORT tidak tersedia
-    app.run(host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 5001))
+    app.run(host="0.0.0.0", port=port, debug=True) # Tambahkan debug=True untuk melihat error

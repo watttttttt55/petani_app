@@ -47,7 +47,7 @@
             user-select: none;
             display: inline-block;
             min-width: 180px;
-            text-align: center; /* Ensure text is centered in buttons */
+            text-align: center; /* Memastikan teks tetap di tengah tombol */
         }
         a.button:hover,
         a.button:focus {
@@ -79,10 +79,9 @@
 <body>
     <h2>Selamat datang, {{ username }}</h2>
     <nav>
+        <a href="{{ url_for('form_petani') }}" class="button" aria-label="Tambah Data Petani">Tambah Data Petani</a>
         {% if petani_data %}
             <a href="{{ url_for('edit_petani', id=petani_data[0]) }}" class="button" aria-label="Edit Data Petani">Edit Data Petani</a>
-        {% else %}
-            <a href="{{ url_for('form_petani') }}" class="button" aria-label="Tambah Data Petani">+ Tambah Data Petani</a>
         {% endif %}
         <a href="{{ url_for('isi_komoditas') }}" class="button" aria-label="Isi Komoditas">Isi Komoditas</a>
         <a href="{{ url_for('isi_hasil_panen') }}" class="button" aria-label="Hasil Panen">Hasil Panen</a>

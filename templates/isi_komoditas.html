@@ -4,28 +4,118 @@
     <meta charset="UTF-8" />
     <title>Isi Komoditas</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <style>
+        /* Gaya CSS sederhana untuk perbaikan tampilan */
+        body {
+            font-family: sans-serif;
+            background-color: #f8f9fa; /* Warna latar belakang lebih lembut */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px; /* Sudut lebih membulat */
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05); /* Efek bayangan lebih halus */
+            width: 450px; /* Sedikit lebih lebar */
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 25px; /* Margin bawah lebih besar */
+            color: #343a40; /* Warna teks lebih gelap */
+        }
+        .form-group {
+            margin-bottom: 20px; /* Margin bawah antar grup lebih besar */
+        }
+        label {
+            display: block;
+            margin-bottom: 8px; /* Margin bawah label */
+            font-weight: bold;
+            color: #495057; /* Warna label lebih gelap */
+        }
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select {
+            width: calc(100% - 16px); /* Ruang padding lebih diperhitungkan */
+            padding: 10px;
+            border: 1px solid #ced4da; /* Warna border lebih lembut */
+            border-radius: 6px; /* Sudut input lebih membulat */
+            box-sizing: border-box;
+            font-size: 16px; /* Ukuran font lebih besar */
+        }
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            border-color: #007bff; /* Warna border saat fokus */
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Efek fokus */
+            outline: none;
+        }
+        button[type="submit"] {
+            background-color: #28a745; /* Warna tombol hijau yang lebih cerah */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px; /* Sudut tombol lebih membulat */
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s ease; /* Efek transisi hover */
+        }
+        button[type="submit"]:hover {
+            background-color: #218838; /* Warna tombol saat hover */
+        }
+        p {
+            text-align: center;
+            margin-top: 25px; /* Margin atas lebih besar */
+            color: #6c757d; /* Warna teks lebih lembut */
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+            transition: color 0.3s ease; /* Efek transisi hover pada link */
+        }
+        a:hover {
+            text-decoration: underline;
+            color: #0056b3; /* Warna link saat hover */
+        }
+    </style>
 </head>
 <body>
-    <h2>Form Komoditas Petani</h2>
-    <form method="POST">
-        <label for="petani_id">Nama Petani:</label>
-        <select name="petani_id" required>
-            {% for petani in petani_list %}
-                <option value="{{ petani[0] }}">{{ petani[1] }}</option>
-            {% endfor %}
-        </select>
+    <div class="container">
+        <h2>Form Komoditas Petani</h2>
+        <form method="POST">
+            <div class="form-group">
+                <label for="petani_id">Nama Petani:</label>
+                <select name="petani_id" id="petani_id" required class="form-control">
+                    {% for petani in petani_list %}
+                        <option value="{{ petani[0] }}">{{ petani[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-        <label for="nama_komoditas">Nama Komoditas:</label>
-        <input type="text" name="nama_komoditas" required />
+            <div class="form-group">
+                <label for="nama_komoditas">Nama Komoditas:</label>
+                <input type="text" name="nama_komoditas" id="nama_komoditas" required class="form-control" />
+            </div>
 
-        <label for="luas_lahan">Luas Lahan (ha):</label>
-        <input type="number" step="0.01" name="luas_lahan" required />
+            <div class="form-group">
+                <label for="luas_lahan">Luas Lahan (ha):</label>
+                <input type="number" step="0.01" name="luas_lahan" id="luas_lahan" required class="form-control" />
+            </div>
 
-        <label for="tanggal_tanam">Tanggal Tanam:</label>
-        <input type="date" name="tanggal_tanam" required />
+            <div class="form-group">
+                <label for="tanggal_tanam">Tanggal Tanam:</label>
+                <input type="date" name="tanggal_tanam" id="tanggal_tanam" required class="form-control" />
+            </div>
 
-        <button type="submit">Simpan Komoditas</button>
-    </form>
-    <p><a href="{{ url_for('dashboard') }}">Kembali ke Dashboard</a></p>
+            <button type="submit" class="btn btn-primary">Simpan Komoditas</button>
+        </form>
+        <p><a href="{{ url_for('dashboard') }}" class="btn btn-link">Kembali ke Dashboard</a></p>
+    </div>
 </body>
 </html>

@@ -1,13 +1,13 @@
 from flask import Flask, render_template, request, redirect, session, url_for, flash
 import psycopg2
-from config import DB_CONFIG
 import os
+from urllib.parse import urlparse
 from shapely import wkt
-from shapely.geometry import Point, Polygon, MultiPolygon
-from geoalchemy2.shape import from_shape
+from shapely.geometry import Polygon, MultiPolygon
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from dotenv import load_dotenv
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -16,20 +16,35 @@ UPLOAD_FOLDER = 'uploads/shapefiles'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def get_db_conn():
+    """Membuat koneksi ke database PostgreSQL."""
+    conn = None
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
-        print("Database connection successful.")
-        return conn
+        if 'DATABASE_URL' in os.environ:
+            url = urlparse(os.environ['DATABASE_URL'])
+            conn = psycopg2.connect(
+                host=url.hostname,
+                port=url.port,
+                database=url.path[1:],
+                user=url.username,
+                password=url.password
+            )
+            print("Database connection successful (via DATABASE_URL).")
+        else:
+            from config import DB_CONFIG
+            conn = psycopg2.connect(**DB_CONFIG)
+            print("Database connection successful (via DB_CONFIG).")
     except psycopg2.Error as e:
         print(f"Error connecting to database: {e}")
-        return None
+    return conn
 
 def close_db_connection(conn):
+    """Menutup koneksi database jika terbuka."""
     if conn:
         conn.close()
         print("Database connection closed.")
 
 def login_required(f):
+    """Dekorator untuk memastikan pengguna sudah login."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
@@ -37,8 +52,6 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
-
-from werkzeug.security import generate_password_hash, check_password_hash
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -51,14 +64,13 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-
         conn = get_db_conn()
         if conn:
             cur = conn.cursor()
             cur.execute("SELECT id, password FROM users WHERE username = %s", (username,))
             user = cur.fetchone()
             cur.close()
-            conn.close()
+            close_db_connection(conn)
 
             if user and check_password_hash(user[1], password):
                 session['user_id'] = user[0]
@@ -82,7 +94,6 @@ def register():
         username = request.form['username']
         password = request.form['password']
         hashed_pw = generate_password_hash(password)
-
         conn = get_db_conn()
         if conn:
             cur = conn.cursor()
@@ -100,14 +111,13 @@ def register():
                 return redirect(url_for('login'))
 
             cur.close()
-            conn.close()
+            close_db_connection(conn)
         else:
             flash("Gagal terhubung ke database.", "danger")
             print("Gagal terhubung ke database saat register.")
 
     print("Rendering register.html")
     return render_template('register.html')
-
 
 @app.route('/logout')
 def logout():
@@ -117,12 +127,9 @@ def logout():
     return redirect(url_for('login'))
 
 @app.route('/dashboard')
+@login_required
 def dashboard():
     print("Mengakses rute /dashboard")
-    if 'user_id' not in session:
-        print("User tidak login, redirect ke /login")
-        return redirect(url_for('login'))
-
     conn = get_db_conn()
     if conn:
         cur = conn.cursor()
@@ -197,8 +204,6 @@ def form_petani():
             conn.commit()
             flash("Data petani berhasil disimpan!", "success")
             print("Data petani berhasil disimpan!")
-            cur.close()
-            close_db_connection(conn)
             return redirect(url_for('dashboard')) # Redirect ke dashboard setelah tambah
         except psycopg2.Error as e:
             conn.rollback()
@@ -246,7 +251,7 @@ def isi_komoditas():
             close_db_connection(conn)
 
     cur = conn.cursor()
-    cur.execute("SELECT id, nama FROM petani")
+    cur.execute("SELECT id, nama FROM petani WHERE user_id = %s", (session['user_id'],))
     petani_list = cur.fetchall()
     cur.close()
     close_db_connection(conn)
@@ -288,7 +293,7 @@ def isi_hasil_panen():
             close_db_connection(conn)
 
     cur = conn.cursor()
-    cur.execute("SELECT id, nama FROM petani")
+    cur.execute("SELECT id, nama FROM petani WHERE user_id = %s", (session['user_id'],))
     petani_list = cur.fetchall()
     cur.close()
     close_db_connection(conn)
@@ -322,12 +327,10 @@ def edit_petani(id):
     if conn:
         cur = conn.cursor()
         if request.method == "POST":
-            # update data
             nama = request.form['nama']
             nik = request.form['nik']
             no_telpon = request.form['no_telpon']
             alamat = request.form['alamat']
-
             cur.execute("UPDATE petani SET nama=%s, nik=%s, no_telpon=%s, alamat=%s WHERE id=%s",
                         (nama, nik, no_telpon, alamat, id))
             conn.commit()
@@ -374,8 +377,6 @@ def hapus_petani(id):
         print("Gagal koneksi ke database")
         return redirect(url_for('riwayat_petani'))
 
-# Remaining routes for register, login, dashboard, etc.
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
-    app.run(host="0.0.0.0", port=port, debug=True) # Tambahkan debug=True untuk melihat error
+    app.run(host="0.0.0.0", port=port, debug=True) # Tetap aktifkan debug untuk pengembangan

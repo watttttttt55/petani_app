@@ -11,8 +11,6 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "12345678")
-UPLOAD_FOLDER = 'uploads/shapefiles'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Konfigurasi Logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

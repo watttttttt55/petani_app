@@ -2,8 +2,6 @@ from flask import Flask, render_template, request, redirect, session, url_for, f
 import psycopg2
 import os
 from urllib.parse import urlparse
-from shapely import wkt
-from shapely.geometry import Polygon, MultiPolygon
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from dotenv import load_dotenv
@@ -191,18 +189,7 @@ def form_petani():
             app.logger.warning(f"Geometri lahan tidak valid atau kosong: {lahan_geom_wkt}")
             return render_template('add_petani.html')
 
-        # Konversi geometri
-        try:
-            lokasi_point = f"SRID=4326;POINT({lon} {lat})"
-            polygon = wkt.loads(lahan_geom_wkt)
-            if isinstance(polygon, Polygon):
-                polygon = MultiPolygon([polygon])
-            multipolygon_wkt = polygon.wkt
-            app.logger.info(f"Geometri berhasil diolah: POINT({lon} {lat}), POLYGON: {multipolygon_wkt[:50]}...")
-        except Exception as e:
-            flash(f"Kesalahan saat memproses geometri: {e}", "danger")
-            app.logger.error(f"Kesalahan saat memproses geometri: {e}", exc_info=True)
-            return render_template('add_petani.html')
+        lokasi_point = f"SRID=4326;POINT({lon} {lat})"
 
         conn = get_db_conn()
         if conn is None:
@@ -220,12 +207,12 @@ def form_petani():
                         ST_GeomFromText(%s, 4326), %s)
             """, (
                 session['user_id'], nama, nik, tanggal_lahir, no_telpon, alamat,
-                lokasi_point, multipolygon_wkt, luas_lahan
+                lokasi_point, lahan_geom_wkt, luas_lahan
             ))
             conn.commit()
             flash("Data petani berhasil disimpan!", "success")
             app.logger.info(f"Data petani untuk user {session.get('username')} berhasil disimpan.")
-            return redirect(url_for('dashboard')) # Redirect ke dashboard setelah tambah
+            return redirect(url_for('dashboard'))
         except psycopg2.Error as e:
             conn.rollback()
             flash(f"Kesalahan database saat menyimpan data petani: {e}", "danger")

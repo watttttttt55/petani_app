@@ -47,7 +47,7 @@
             user-select: none;
             display: inline-block;
             min-width: 180px;
-            text-align: center; /* Memastikan teks tetap di tengah tombol */
+            text-align: center;
         }
         a.button:hover,
         a.button:focus {
@@ -83,6 +83,7 @@
         {% if petani_data %}
             <a href="{{ url_for('edit_petani', id=petani_data[0]) }}" class="button" aria-label="Edit Data Petani">Edit Data Petani</a>
         {% endif %}
+        <a href="{{ url_for('riwayat_petani') }}" class="button" aria-label="Riwayat Data Petani">Riwayat Data Petani</a>
         <a href="{{ url_for('isi_komoditas') }}" class="button" aria-label="Isi Komoditas">Isi Komoditas</a>
         <a href="{{ url_for('isi_hasil_panen') }}" class="button" aria-label="Hasil Panen">Hasil Panen</a>
         <a href="{{ url_for('logout') }}" class="button" aria-label="Logout">Logout</a>

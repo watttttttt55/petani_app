@@ -1,6 +1,6 @@
 import os
 
-DB_CONFIG: dict[str, str] = {
+DB_CONFIG = {
     'dbname': os.getenv('DB_NAME', 'petani_app'),
     'user': os.getenv('DB_USER', 'postgres'),
     'password': os.getenv('DB_PASSWORD', '12345678'),

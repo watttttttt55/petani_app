@@ -2,79 +2,138 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Isi Hasil Panen</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
     <style>
-        /* Gaya CSS sederhana untuk perbaikan tampilan */
+        /* Gaya CSS untuk Isi Hasil Panen */
         body {
-            font-family: sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Poppins', sans-serif; /* Menggunakan font Poppins */
+            background: linear-gradient(135deg, #2980b9, #6ab04c); /* Background gradien */
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            color: #333; /* Warna teks umum */
         }
         .container {
             background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 400px;
+            padding: 40px; /* Padding lebih besar */
+            border-radius: 12px; /* Sudut lebih membulat */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Bayangan lebih jelas */
+            width: 100%;
+            max-width: 450px; /* Lebar maksimum */
+            box-sizing: border-box; /* Pastikan padding termasuk dalam lebar */
         }
         h2 {
             text-align: center;
-            margin-bottom: 20px;
-            color: #333;
+            margin-bottom: 30px; /* Margin bawah lebih besar */
+            color: #2c3e50; /* Warna judul lebih gelap */
+            font-size: 2rem; /* Ukuran judul lebih besar */
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px; /* Jarak antar grup form lebih besar */
         }
         label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
+            margin-bottom: 8px; /* Jarak antara label dan input */
+            font-weight: 600; /* Tebal */
+            color: #34495e; /* Warna label */
+            font-size: 1.1rem; /* Ukuran font label */
         }
         input[type="text"],
         input[type="number"],
         input[type="date"],
         select {
-            width: calc(100% - 12px);
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            width: 100%;
+            padding: 12px; /* Padding lebih besar */
+            border: 1px solid #c5d0db; /* Border sedikit lebih gelap */
+            border-radius: 8px; /* Sudut lebih membulat */
             box-sizing: border-box;
+            font-size: 1rem; /* Ukuran font input */
+            transition: border-color 0.3s ease; /* Transisi halus saat fokus */
+        }
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            border-color: #007bff; /* Border biru saat fokus */
+            outline: none; /* Hilangkan outline default */
         }
         button[type="submit"] {
-            background-color: #5cb85c;
+            background-color: #28a745; /* Warna hijau lebih standar */
             color: white;
-            padding: 10px 15px;
+            padding: 12px 20px; /* Padding lebih besar */
             border: none;
-            border-radius: 4px;
+            border-radius: 8px; /* Sudut lebih membulat */
             cursor: pointer;
-            font-size: 16px;
+            font-size: 1.1rem; /* Ukuran font tombol */
+            font-weight: 600; /* Tebal */
             width: 100%;
+            transition: background-color 0.3s ease, transform 0.2s ease; /* Transisi halus */
         }
         button[type="submit"]:hover {
-            background-color: #4cae4c;
+            background-color: #218838; /* Warna hijau lebih gelap saat hover */
+            transform: translateY(-2px); /* Efek angkat saat hover */
         }
-        p {
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+        .back-link {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 25px; /* Margin atas lebih besar */
         }
-        a {
+        .back-link a {
             color: #007bff;
             text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
         }
-        a:hover {
+        .back-link a:hover {
+            color: #0056b3;
             text-decoration: underline;
+        }
+
+        /* Flash messages styling (tambahan, jika belum ada di style.css utama) */
+        .flash-messages {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        .flash-messages li {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: 500;
+            text-align: left;
+        }
+        .flash-messages .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flash-messages .danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Form Hasil Panen Petani</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                    {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
         <form method="POST">
             <div class="form-group">
                 <label for="petani_id">Nama Petani:</label>
@@ -102,7 +161,9 @@
 
             <button type="submit">Simpan Hasil Panen</button>
         </form>
-        <p><a href="{{ url_for('dashboard') }}">Kembali ke Dashboard</a></p>
+        <div class="back-link">
+            <a href="{{ url_for('dashboard') }}">Kembali ke Dashboard</a>
+        </div>
     </div>
 </body>
 </html>

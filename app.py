@@ -380,7 +380,6 @@ def riwayat_petani():
 @login_required
 def edit_petani(id):
     conn = get_db_conn()
-    petani = None
     if not conn:
         flash("Gagal koneksi ke database. Cek konfigurasi database Anda.", "danger")
         return redirect(url_for('riwayat_petani'))
@@ -394,20 +393,23 @@ def edit_petani(id):
             tanggal_lahir = request.form['tanggal_lahir']
             no_telpon = request.form['no_telpon']
             alamat = request.form['alamat']
+            lahan_geom = request.form['lahan_geom']
 
             cur.execute("""
                 UPDATE petani
-                SET nama=%s, nik=%s, tanggal_lahir=%s, no_telpon=%s, alamat=%s
+                SET nama=%s, nik=%s, tanggal_lahir=%s, no_telpon=%s, alamat=%s, lahan_geom=ST_GeomFromText(%s, 4326)
                 WHERE id=%s AND user_id=%s
-            """, (nama, nik, tanggal_lahir, no_telpon, alamat, id, session['user_id']))
+            """, (nama, nik, tanggal_lahir, no_telpon, alamat, lahan_geom, id, session['user_id']))
             conn.commit()
             flash("Data petani berhasil diperbarui!", "success")
             return redirect(url_for("riwayat_petani"))
+
         else:
-            cur.execute(
-                "SELECT id, nama, nik, tanggal_lahir, no_telpon, alamat, lokasi_point, ST_AsText(lahan_geom) AS lahan_geom, luas_lahan FROM petani WHERE id = %s AND user_id = %s",
-                (id, session['user_id'],)
-            )
+            cur.execute("""
+                SELECT id, nama, nik, tanggal_lahir, no_telpon, alamat, lokasi_point, ST_AsText(lahan_geom), luas_lahan
+                FROM petani
+                WHERE id = %s AND user_id = %s
+            """, (id, session['user_id']))
             petani = cur.fetchone()
             if not petani:
                 flash("Data petani tidak ditemukan atau Anda tidak memiliki akses.", "danger")
@@ -425,14 +427,10 @@ def edit_petani(id):
                 'luas_lahan': petani[8]
             }
             return render_template("edit_petani.html", petani=petani_dict)
-
-    except psycopg2.Error as e:
-        conn.rollback()
-        flash(f"Terjadi kesalahan database saat memperbarui data petani: {e}", "danger")
-        app.logger.error(f"Database error during edit_petani for ID {id}: {e}", exc_info=True)
     except Exception as e:
-        flash(f"Terjadi kesalahan tidak terduga: {e}", "danger")
-        app.logger.error(f"Unexpected error in edit_petani for ID {id}: {e}", exc_info=True)
+        conn.rollback()
+        flash(f"Terjadi kesalahan saat memperbarui data petani: {e}", "danger")
+        app.logger.error(f"Edit Petani Error: {e}", exc_info=True)
     finally:
         if cur:
             cur.close()

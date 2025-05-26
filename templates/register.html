@@ -16,11 +16,36 @@
       font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, #17a2b8, #11998e);
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
       min-height: 100vh;
       padding: 20px;
       color: #333;
+    }
+
+    .welcome {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 10px;
+    }
+
+    .welcome h1 {
+      color: #004d40;
+      font-size: 1.8rem;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      color: #eef2f3;
+      font-size: 1rem;
+      font-weight: 400;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
     }
 
     h2 {
@@ -77,6 +102,13 @@
       box-shadow: 0 0 6px #17a2b8aa;
     }
 
+    .error {
+      color: red;
+      font-size: 0.9rem;
+      margin-top: -15px;
+      margin-bottom: 10px;
+    }
+
     button {
       width: 100%;
       background-color: #17a2b8;
@@ -121,22 +153,57 @@
   </style>
 </head>
 <body>
-  <div>
-    <h2>Registrasi Petani</h2>
-    <form method="POST" novalidate>
-      <div class="input-group">
-        <i class="bi bi-person"></i>
-        <input type="text" id="username" name="username" placeholder="Username" required autocomplete="username" />
-      </div>
 
-      <div class="input-group">
-        <i class="bi bi-lock"></i>
-        <input type="password" id="password" name="password" placeholder="Password" required autocomplete="new-password" />
-      </div>
-
-      <button type="submit">Daftar</button>
-    </form>
-    <p>Sudah punya akun? <a href="{{ url_for('login') }}">Login di sini</a></p>
+  <!-- Sambutan -->
+  <div class="welcome">
+    <img src="https://img.icons8.com/color/96/plant-under-sun--v1.png" alt="Logo Petani" class="logo">
+    <h1>Selamat Datang di Registrasi</h1>
+    <p class="subtitle">Silakan buat akun baru untuk bergabung</p>
   </div>
+
+  <form method="POST" onsubmit="return validateForm()">
+    <div class="input-group">
+      <i class="bi bi-person"></i>
+      <input type="text" id="username" name="username" placeholder="Username" required />
+    </div>
+
+    <div class="input-group">
+      <i class="bi bi-lock"></i>
+      <input type="password" id="password" name="password" placeholder="Password" required />
+    </div>
+
+    <div class="input-group">
+      <i class="bi bi-lock-fill"></i>
+      <input type="password" id="confirm-password" name="confirm-password" placeholder="Konfirmasi Password" required />
+    </div>
+
+    <div class="error" id="error-message"></div>
+
+    <button type="submit">Daftar</button>
+  </form>
+
+  <p>Sudah punya akun? <a href="{{ url_for('login') }}">Login di sini</a></p>
+
+  <!-- Validasi JS -->
+  <script>
+    function validateForm() {
+      const pass = document.getElementById("password").value;
+      const confirm = document.getElementById("confirm-password").value;
+      const error = document.getElementById("error-message");
+
+      if (pass !== confirm) {
+        error.textContent = "Password dan konfirmasi tidak cocok!";
+        return false;
+      }
+
+      if (pass.length < 6) {
+        error.textContent = "Password minimal 6 karakter!";
+        return false;
+      }
+
+      error.textContent = "";
+      return true;
+    }
+  </script>
 </body>
 </html>

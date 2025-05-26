@@ -170,23 +170,19 @@ def logout():
 @login_required
 def dashboard():
     conn = get_db_conn()
+    petani_data = None
     if conn:
-        cur = None
-        petani_data = None
+        cur = conn.cursor()
         try:
-            cur = conn.cursor()
             cur.execute("SELECT id FROM petani WHERE user_id = %s LIMIT 1", (session['user_id'],))
             petani_data = cur.fetchone()
         except psycopg2.Error as e:
-            flash("Terjadi kesalahan database saat mengambil data petani.", "danger")
+            flash("Terjadi kesalahan saat mengambil data petani.", "danger")
         finally:
-            if cur:
-                cur.close()
+            cur.close()
             close_db_connection(conn)
-        return render_template('dashboard.html', username=session.get('username'), petani_data=petani_data)
-    else:
-        flash("Gagal terhubung ke database saat memuat dashboard. Cek konfigurasi database Anda.", "danger")
-        return render_template('dashboard.html', username=session.get('username'), petani_data=None)
+    return render_template('dashboard.html', username=session.get('username'), petani_data=petani_data)
+
 
 @app.route('/form_petani', methods=['GET', 'POST'])
 @login_required
@@ -460,6 +456,73 @@ def hapus_petani(id):
     else:
         flash("Gagal koneksi ke database. Cek konfigurasi database Anda.", "danger")
         return redirect(url_for('riwayat_petani'))
+
+@app.route("/riwayat_komoditas")
+@login_required
+def riwayat_komoditas():
+    """Displays a list of commodity records for the current user's farmers."""
+    conn = get_db_conn()
+    komoditas_data = []
+    if conn:
+        cur = None
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT k.id, p.nama, k.nama_komoditas, k.luas_lahan, k.tanggal_tanam
+                FROM komoditas k
+                JOIN petani p ON k.petani_id = p.id
+                WHERE p.user_id = %s
+                ORDER BY k.tanggal_tanam DESC, p.nama ASC
+            """, (session['user_id'],))
+            komoditas_data = cur.fetchall()
+        except psycopg2.Error as e:
+            app.logger.error(f"Database error fetching komoditas data (user_id: {session.get('user_id')}): {e}", exc_info=True)
+            flash(f"Kesalahan database saat mengambil data komoditas: {e}", "danger")
+        except Exception as e:
+            app.logger.error(f"Unexpected error fetching komoditas data (user_id: {session.get('user_id')}): {e}", exc_info=True)
+            flash("Terjadi kesalahan tak terduga saat mengambil data komoditas.", "danger")
+        finally:
+            if cur:
+                cur.close()
+            close_db_connection(conn)
+    else:
+        flash("Gagal terhubung ke database. Coba lagi nanti.", "danger")
+
+    return render_template("riwayat_komoditas.html", komoditas=komoditas_data)
+
+@app.route("/riwayat_hasil_panen")
+@login_required
+def riwayat_hasil_panen():
+    """Displays a list of harvest records for the current user's farmers."""
+    conn = get_db_conn()
+    hasil_data = []
+    if conn:
+        cur = None
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT h.id, p.nama, h.nama_komoditas, h.jumlah, h.tanggal_panen
+                FROM hasil_panen h
+                JOIN petani p ON h.petani_id = p.id
+                WHERE p.user_id = %s
+                ORDER BY h.tanggal_panen DESC, p.nama ASC
+            """, (session['user_id'],))
+            hasil_data = cur.fetchall()
+        except psycopg2.Error as e:
+            app.logger.error(f"Database error fetching hasil_panen data (user_id: {session.get('user_id')}): {e}", exc_info=True)
+            flash(f"Kesalahan database saat mengambil data hasil panen: {e}", "danger")
+        except Exception as e:
+            app.logger.error(f"Unexpected error fetching hasil_panen data (user_id: {session.get('user_id')}): {e}", exc_info=True)
+            flash("Terjadi kesalahan tak terduga saat mengambil data hasil panen.", "danger")
+        finally:
+            if cur:
+                cur.close()
+            close_db_connection(conn)
+    else:
+        flash("Gagal terhubung ke database. Coba lagi nanti.", "danger")
+
+    return render_template("riwayat_hasil_panen.html", hasil_panen=hasil_data)
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))

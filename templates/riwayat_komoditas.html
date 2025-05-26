@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Riwayat Komoditas</h2>
+<table>
+    <tr><th>Petani</th><th>Komoditas</th><th>Luas</th><th>Tanggal Tanam</th></tr>
+    {% for k in komoditas %}
+    <tr>
+        <td>{{ k[1] }}</td>
+        <td>{{ k[2] }}</td>
+        <td>{{ k[3] }} Ha</td>
+        <td>{{ k[4] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

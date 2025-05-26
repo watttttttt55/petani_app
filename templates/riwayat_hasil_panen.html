@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Riwayat Hasil Panen</h2>
+<table>
+    <tr><th>Petani</th><th>Komoditas</th><th>Jumlah</th><th>Tanggal Panen</th></tr>
+    {% for h in hasil_panen %}
+    <tr>
+        <td>{{ h[1] }}</td>
+        <td>{{ h[2] }}</td>
+        <td>{{ h[3] }} kg</td>
+        <td>{{ h[4] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

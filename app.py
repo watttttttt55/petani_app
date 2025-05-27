@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from dotenv import load_dotenv
+from datetime import datetime
 import logging
 
 load_dotenv()
@@ -166,22 +167,46 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+# ... (impor lainnya di bagian atas)
+from datetime import datetime
+# ... (kode lainnya)
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
     conn = get_db_conn()
     petani_data = None
     if conn:
-        cur = conn.cursor()
+        cur = None
         try:
+            cur = conn.cursor()
             cur.execute("SELECT id FROM petani WHERE user_id = %s LIMIT 1", (session['user_id'],))
             petani_data = cur.fetchone()
         except psycopg2.Error as e:
+            app.logger.error(f"Database error fetching petani data for dashboard (user_id: {session.get('user_id')}): {e}", exc_info=True)
             flash("Terjadi kesalahan saat mengambil data petani.", "danger")
         finally:
-            cur.close()
+            if cur:
+                cur.close()
             close_db_connection(conn)
-    return render_template('dashboard.html', username=session.get('username'), petani_data=petani_data)
+    else:
+        flash("Gagal terhubung ke database saat memuat dashboard.", "danger")
+
+    now = datetime.now()
+    nama_hari = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
+    nama_bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                  "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+
+    hari_ini = nama_hari[now.weekday()]
+    bulan_ini = nama_bulan[now.month - 1]
+    tanggal_formatted = f"{hari_ini}, {now.day} {bulan_ini} {now.year}"
+
+    return render_template(
+        'dashboard.html',
+        username=session.get('username'),
+        petani_data=petani_data,
+        tanggal=tanggal_formatted
+    )
 
 
 @app.route('/form_petani', methods=['GET', 'POST'])

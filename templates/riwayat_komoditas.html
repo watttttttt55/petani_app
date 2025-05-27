@@ -1,15 +1,153 @@
-{% extends 'base.html' %}
-{% block content %}
-<h2>Riwayat Komoditas</h2>
-<table>
-    <tr><th>Petani</th><th>Komoditas</th><th>Luas</th><th>Tanggal Tanam</th></tr>
-    {% for k in komoditas %}
-    <tr>
-        <td>{{ k[1] }}</td>
-        <td>{{ k[2] }}</td>
-        <td>{{ k[3] }} Ha</td>
-        <td>{{ k[4] }}</td>
-    </tr>
-    {% endfor %}
-</table>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Komoditas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Gaya dasar untuk body */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6; /* Warna latar belakang lembut */
+            color: #333;
+            padding-top: 20px;
+        }
+        /* Kontainer utama untuk konten */
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Shadow lembut untuk efek kedalaman */
+            max-width: 900px; /* Batasi lebar kontainer */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        /* Gaya untuk judul halaman */
+        h2 {
+            color: #079992; /* Warna hijau khas aplikasi */
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 600;
+        }
+        /* Gaya untuk tabel */
+        .table {
+            margin-top: 20px;
+            border-collapse: separate; /* Untuk radius border di header */
+            border-spacing: 0;
+        }
+        /* Gaya untuk header tabel */
+        .table thead th {
+            background-color: #079992; /* Warna hijau untuk header */
+            color: white;
+            border-color: #057d77;
+            vertical-align: middle;
+            padding: 12px 15px;
+            font-weight: 600;
+        }
+        /* Sudut membulat untuk header tabel */
+        .table thead tr:first-child th:first-child {
+            border-top-left-radius: 8px;
+        }
+        .table thead tr:first-child th:last-child {
+            border-top-right-radius: 8px;
+        }
+        /* Gaya untuk baris genap di tbody */
+        .table tbody tr:nth-child(even) {
+            background-color: #f8fcfb; /* Warna latar belakang lebih terang untuk baris genap */
+        }
+        /* Gaya untuk baris saat di-hover */
+        .table tbody tr:hover {
+            background-color: #e0f2f1; /* Warna hijau muda saat di-hover */
+            cursor: pointer;
+        }
+        /* Gaya untuk sel tabel */
+        .table td, .table th {
+            padding: 10px 15px;
+            vertical-align: middle;
+            border-top: 1px solid #dee2e6; /* Border antar sel */
+        }
+        /* Gaya untuk tombol kembali */
+        .btn-back {
+            background-color: #6c757d; /* Warna abu-abu Bootstrap */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-back:hover {
+            background-color: #5a6268; /* Abu-abu lebih gelap saat hover */
+            color: white;
+        }
+        /* Gaya untuk pesan tidak ada data */
+        .no-data-message {
+            text-align: center;
+            color: #777;
+            font-style: italic;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+        }
+        /* Gaya untuk flash messages */
+        .alert {
+            margin-top: 15px;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2><i class="bi bi-seed-fill"></i> Riwayat Komoditas</h2>
+
+        {# Bagian untuk menampilkan flash messages #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% if komoditas %} {# Cek apakah ada data komoditas #}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Nama Petani</th>
+                        <th>Komoditas</th>
+                        <th>Luas Lahan (Ha/m²)</th> {# Sesuaikan satuan #}
+                        <th>Tanggal Tanam</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {# Loop melalui setiap item komoditas #}
+                    {% for item in komoditas %}
+                    <tr>
+                        <td>{{ item[1] }}</td> {# Nama Petani dari JOIN #}
+                        <td>{{ item[2] }}</td> {# Nama Komoditas #}
+                        <td>{{ item[3] }}</td> {# Luas Lahan Komoditas #}
+                        <td>{{ item[4].strftime('%d-%m-%Y') }}</td> {# Tanggal Tanam, diformat #}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="no-data-message">Belum ada data komoditas yang tercatat untuk petani Anda.</p>
+        {% endif %}
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-back"><i class="bi bi-arrow-left-circle"></i> Kembali ke Dashboard</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
